@@ -1,0 +1,9 @@
+.env
+
+.idea
+.venv
+
+models/
+wandb/
+__pycache__/
+*.pyc
