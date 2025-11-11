@@ -235,12 +235,12 @@ def main():
         print("WARNING: WANDB_API_KEY not found in .env file.")
 
     parser = argparse.ArgumentParser(description="Train a GLUE Transformer model.")
-
     parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate.")
     parser.add_argument("--train_batch_size", type=int, default=32, help="Training batch size.")
+    parser.add_argument("--eval_batch_size", type=int, default=32, help="Evaluation batch size. (NEU)")
     parser.add_argument("--weight_decay", type=float, default=0.1, help="Weight decay.")
     parser.add_argument("--warmup_ratio", type=float, default=0.2, help="Warmup ratio.")
-
+    parser.add_argument("--beta1", type=float, default=0.9, help="AdamW beta1 parameter. (NEU)")
     parser.add_argument("--checkpoint_dir", type=str, default="models", help="Directory to save local checkpoints.")
 
     args = parser.parse_args()
@@ -253,7 +253,10 @@ def main():
 
     L.seed_everything(42)
 
-    run_name = f"P2-{TASK_NAME}-lr_{args.learning_rate}-bs_{args.train_batch_size}-wd_{args.weight_decay}-wr_{args.warmup_ratio}"
+    run_name = (
+        f"P2-{TASK_NAME}-lr_{args.learning_rate}-bs_{args.train_batch_size}-wd_{args.weight_decay}"
+        f"-wr_{args.warmup_ratio}-b1_{args.beta1}-ebs_{args.eval_batch_size}"
+    )
 
     wandb_logger = WandbLogger(
         project="mlops-project2-glue-finetuning",
@@ -275,6 +278,7 @@ def main():
         model_name_or_path=MODEL_NAME,
         task_name=TASK_NAME,
         train_batch_size=args.train_batch_size,
+        eval_batch_size=args.eval_batch_size,
         max_seq_length=MAX_SEQ_LENGTH,
     )
     dm.setup("fit")
@@ -287,6 +291,7 @@ def main():
         learning_rate=args.learning_rate,
         weight_decay=args.weight_decay,
         warmup_ratio=args.warmup_ratio,
+        beta1=args.beta1,
         gradient_clipping_val=GRAD_CLIP_VAL,
         train_batch_size=dm.train_batch_size,
         eval_batch_size=dm.eval_batch_size,
